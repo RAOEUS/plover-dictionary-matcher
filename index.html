@@ -1,83 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lapwing Theory Matcher</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <style>
-            .uploader {
-                max-width: 500px;
-                margin: auto;
-            }
-        </style>
-    </head>
-    <body class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-        <div class="container">
-            <div class="uploader">
-                <h1 class="text-center mb-4">Plover Theory Matcher</h1>
-                <p style="text-align: center;">
-                This is a simple script that matches your dictionary against Lapwing's lapwing-base.json and spits out the corresponding entries. Yay!<br/>＼(＾▽＾)／
-                </p>
-                <input id="fileInput" class="form-control mb-3" type="file" accept=".json" required>
-                <div class="d-grid gap-2">
-                    <button id="matchButton" class="btn btn-primary">Match</button>
-                </div>
-                <div id="result" class="mt-4"></div>
-            </div>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plover Theory Matcher</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    .uploader {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="container">
+    <div class="uploader">
+      <h1 class="text-center mb-4">Plover JSON Dictionary Matcher</h1>
+      <p style="text-align: center;">
+        This script finds the common entries between two JSON Plover dictionary input files. Yay!<br />＼(＾▽＾)／
+      </p>
+
+      <!-- Step 1: Choose Method -->
+      <div id="step1" class="step active">
+        <h3 class="text-center">Step 1: Choose Your Method</h3>
+        <div class="d-grid gap-2 mt-3">
+          <button id="chooseUrlButton" class="btn btn-outline-primary">Use a URL (Raw JSON only)</button>
+          <button id="chooseFileButton" class="btn btn-outline-primary">Upload a JSON File</button>
         </div>
+      </div>
 
-        <script>
-            // Fetch main.json file when the page loads
-            window.addEventListener('DOMContentLoaded', function () {
-                fetch('https://raw.githubusercontent.com/aerickt/steno-dictionaries/main/lapwing-base.json')
-                    .then(response => response.json())
-                    .then(mainData => {
-                        window.mainData = mainData;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching main.json:', error);
-                        alert('Error fetching main.json');
-                    });
-            });
+      <!-- Step 2: Enter URL or Upload File -->
+      <div id="step2-url" class="step">
+        <h3 class="text-center">Step 2: Enter URL</h3>
+        <input id="urlInput" class="form-control mb-3" type="text" placeholder="Enter the URL for the JSON file"
+          required>
+        <div class="d-grid gap-2 mt-3">
+          <button id="nextFromUrlButton" class="btn btn-primary">Next</button>
+          <button id="backToStep1FromUrlButton" class="btn btn-secondary">Back</button>
+        </div>
+      </div>
 
-            document.getElementById('matchButton').addEventListener('click', function () {
-                var mainData = window.mainData;
+      <div id="step2-file" class="step">
+        <h3 class="text-center">Step 2: Upload JSON File</h3>
+        <input id="mainFileInput" class="form-control mb-3" type="file" accept=".json" required>
+        <div class="d-grid gap-2 mt-3">
+          <button id="nextFromFileButton" class="btn btn-primary">Next</button>
+          <button id="backToStep1FromFileButton" class="btn btn-secondary">Back</button>
+        </div>
+      </div>
 
-                var fileInput = document.getElementById('fileInput');
-                var file = fileInput.files[0];
-                if (!file) {
-                    alert('Please select the JSON file.');
-                    return;
-                }
+      <!-- Step 3: Upload File to Match -->
+      <div id="step3" class="step">
+        <h3 class="text-center">Step 3: Upload File to Match</h3>
+        <input id="fileInput" class="form-control mb-3" type="file" accept=".json" required>
+        <div class="d-grid gap-2 mt-3">
+          <button id="matchButton" class="btn btn-primary">Match</button>
+          <button id="backToStep2Button" class="btn btn-secondary">Back</button>
+        </div>
+      </div>
 
-                var fileReader = new FileReader();
-                fileReader.onload = function () {
-                    var fileData = JSON.parse(fileReader.result);
+      <!-- Result Display -->
+      <div id="result" class="mt-4"></div>
+    </div>
+  </div>
 
-                    var uniqueProperties = new Set(Object.values(mainData));
-                    var matchedData = {};
-                    for (var key in fileData) {
-                        var value = fileData[key];
-                        if (uniqueProperties.has(value)) {
-                            matchedData[key] = value;
-                        }
-                    }
+  <script>
+    // Step 1: Choose Method
+    document.getElementById('chooseUrlButton').addEventListener('click', function () {
+      showStep('step2-url');
+    });
 
-                    var resultDiv = document.getElementById('result');
-                    resultDiv.innerHTML = '';
+    document.getElementById('chooseFileButton').addEventListener('click', function () {
+      showStep('step2-file');
+    });
 
-                    if (Object.keys(matchedData).length === 0) {
-                        resultDiv.innerHTML = '<div class="alert alert-warning" role="alert">No matches found!</div>';
-                    } else {
-                        var downloadUrl = URL.createObjectURL(new Blob([JSON.stringify(matchedData, null, 2)], { type: 'application/json' }));
-                        resultDiv.innerHTML = '<div class="alert alert-success" role="alert">Matched data found! <a href="' + downloadUrl + '" download="plover-matches.json">Download Result</a></div>';
-                    }
-                };
-                fileReader.readAsText(file);
-            });
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    </body>
+    // Step 2: URL or File
+    document.getElementById('nextFromUrlButton').addEventListener('click', function () {
+      const urlInput = document.getElementById('urlInput').value;
+      if (!urlInput) {
+        alert('Please enter a URL.');
+        return;
+      }
+      showStep('step3');
+    });
+
+    document.getElementById('nextFromFileButton').addEventListener('click', function () {
+      const mainFileInput = document.getElementById('mainFileInput').files[0];
+      if (!mainFileInput) {
+        alert('Please upload a JSON file.');
+        return;
+      }
+      showStep('step3');
+    });
+
+    document.getElementById('backToStep1FromUrlButton').addEventListener('click', function () {
+      showStep('step1');
+    });
+
+    document.getElementById('backToStep1FromFileButton').addEventListener('click', function () {
+      showStep('step1');
+    });
+
+    // Step 3: Back Button
+    document.getElementById('backToStep2Button').addEventListener('click', function () {
+      const urlInput = document.getElementById('urlInput').value;
+      if (urlInput) {
+        showStep('step2-url');
+      } else {
+        showStep('step2-file');
+      }
+    });
+
+    // Step 3: Match Files
+    document.getElementById('matchButton').addEventListener('click', function () {
+      var urlInput = document.getElementById('urlInput').value;
+      var mainFileInput = document.getElementById('mainFileInput').files[0];
+      var fileInput = document.getElementById('fileInput').files[0];
+
+      if (!fileInput) {
+        alert('Please select a JSON file to match.');
+        return;
+      }
+
+      if (urlInput) {
+        // Fetch JSON from URL
+        fetch(urlInput)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(mainData => matchFiles(mainData, fileInput))
+          .catch(error => {
+            console.error('Error fetching the JSON file:', error);
+            alert('Error fetching the JSON file. Please ensure the URL is correct and points to a valid JSON file.');
+          });
+      } else if (mainFileInput) {
+        // Read uploaded JSON file
+        var mainFileReader = new FileReader();
+        mainFileReader.onload = function () {
+          var mainData = JSON.parse(mainFileReader.result);
+          matchFiles(mainData, fileInput);
+        };
+        mainFileReader.readAsText(mainFileInput);
+      }
+    });
+
+    // Function to match files
+    function matchFiles(mainData, fileInput) {
+      var fileReader = new FileReader();
+      fileReader.onload = function () {
+        var fileData = JSON.parse(fileReader.result);
+
+        var uniqueProperties = new Set(Object.values(mainData));
+        var matchedData = {};
+        for (var key in fileData) {
+          var value = fileData[key];
+          if (uniqueProperties.has(value)) {
+            matchedData[key] = value;
+          }
+        }
+
+        var resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
+
+        if (Object.keys(matchedData).length === 0) {
+          resultDiv.innerHTML = '<div class="alert alert-warning" role="alert">No matches found!</div>';
+        } else {
+          var downloadUrl = URL.createObjectURL(new Blob([JSON.stringify(matchedData, null, 2)], { type: 'application/json' }));
+          resultDiv.innerHTML = '<div class="alert alert-success" role="alert">Matched data found! <a href="' + downloadUrl + '" download="dictionary-matches.json">Download Result</a></div>';
+        }
+      };
+      fileReader.readAsText(fileInput);
+    }
+
+    // Utility function to show a specific step and hide others
+    function showStep(stepId) {
+      const steps = document.querySelectorAll('.step');
+      steps.forEach(step => {
+        step.classList.remove('active');
+        if (step.id === stepId) {
+          step.classList.add('active');
+        }
+      });
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>
-
