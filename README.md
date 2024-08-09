@@ -1,6 +1,6 @@
-# Lapwing Theory Matches
+# Plover Dictionary Matcher
 
-This is a simple script that matches your dictionary against Lapwing theory's lapwing-base.json and spits out the corresponding entries. Yay! ＼(＾▽＾)／
+This script finds the common entries between two JSON Plover dictionary input files. Yay! ＼(＾▽＾)／
 
 ## Instructions
 Download and open in your browser!
