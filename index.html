@@ -8,8 +8,17 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   <style>
+    body {
+      background: #efefef;
+    }
+
+    .btn-outline-primary {
+      background: white;
+    }
+
     .uploader {
-      max-width: 500px;
+      max-width: 100%;
+      width: 700px;
       margin: auto;
     }
 
@@ -27,9 +36,29 @@
   <div class="container">
     <div class="uploader">
       <h1 class="text-center mb-4">Plover JSON Dictionary Matcher</h1>
-      <p style="text-align: center;">
-        This script finds the common entries between two JSON Plover dictionary input files. Yay!<br />＼(＾▽＾)／
+      <p>
+        This tool helps you identify common entries between two Plover JSON dictionary files. Whether you're merging
+        dictionaries or looking to find overlapping strokes and definitions between different sources, this matcher
+        makes it
+        easy. You can either input a URL to a JSON file or upload the files directly. After identifying the common
+        entries,
+        the tool will allow you to download the matched entries as a new JSON file.
       </p>
+
+      <ol>
+        <li>First, choose whether to input a URL or upload a JSON file from your device.</li>
+        <li>If using a URL, paste the link to your JSON file. If uploading, select the first JSON file.</li>
+        <li>Upload the second JSON file that you want to match against the first.</li>
+        <li>The tool will compare the two files and find the common entries.</li>
+      </ol>
+
+      <div class="alert alert-primary" role="alert">
+        <strong>Note:</strong> Only the entries from the second dictionary uploaded in step 3 will be included in the
+        result.
+        This means you'll receive a new JSON file containing only the matching entries from the second dictionary, which
+        overlapped with entries in the first dictionary.
+      </div>
+
 
       <!-- Step 1: Choose Method -->
       <div id="step1" class="step active">
